@@ -9,8 +9,6 @@ import { IoIosHelpCircleOutline } from "react-icons/io";
 
 
 const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
 
   const cartContext = React.useContext(CartContextProvider)
 
