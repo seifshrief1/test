@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Navbar from "../../Components/Navbar/Navbar";
 import { CiShoppingCart } from "react-icons/ci";
 import { ProductsContextProvider } from "../../Contexts/ProductsContext";

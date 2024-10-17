@@ -1,130 +1,242 @@
-import React, { useState } from "react";
-import Navbar from "../../Components/Navbar/Navbar";
-import productsData from "../../Components/ProductsArray";
-import { FaTrash } from "react-icons/fa";
+import React, { useEffect } from 'react'
+import Navbar from '../../Components/Navbar/Navbar'
+import { CartContextProvider } from '../../Contexts/CartContext'
+import CartItem from '../../Components/Cart/CartItem'
+import { StatesContextProvider } from '../../Contexts/StatesContext'
+import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 
 const Cart = () => {
-  const [productQuantity, setProductQuantity] = useState(
-    productsData.map((product) => ({
-      ...product,
-      quantity: 1,
-    }))
-  );
 
-  const incrementQuantity = (id) => {
-    const newQuantity = productQuantity.map((product) => {
-      if (product.id === id) {
-        return {
-          ...product,
-          quantity: product.quantity + 1,
-        };
-      }
-      return product;
-    });
+    // cart
+    const cartContext = React.useContext(CartContextProvider)
+    const cart = cartContext?.cart
+    useEffect(() => {
+        cartContext?.getCart()
+    }, [])
 
-    setProductQuantity(newQuantity);
-  };
+    // states
+    const statesContext = React.useContext(StatesContextProvider)
+    const states = statesContext?.states
+    useEffect(() => {
+        statesContext?.getStates()
+    }, [])
 
-  const decrementQuantity = (id) => {
-    const newQuantity = productQuantity.map((product) => {
-      if (product.id === id && product.quantity > 1) {
-        return {
-          ...product,
-          quantity: product.quantity - 1,
-        };
-      }
-      return product;
-    });
 
-    setProductQuantity(newQuantity);
-  };
 
-  return (
-    <div className="flex flex-col justify-center items-center h-auto">
-      <Navbar />
-      <div className="w-[100vw] justify-between flex flex-col md:flex-row">
-        <div className="md:w-1/3 lg:w-[30vw] lg:h-[100vh] h-fit bg-gray-200">
-          <h1 className="text-3xl mr-10 items-center font-bold mt-28 text-right">
-            تفاصيل السلة
-          </h1>
-          <div className="flex flex-col gap-5 items-start p-10">
-            <div className="flex justify-between items-center w-full">
-              <h2 className="text-2xl font-bold text-gray-700">الشحن</h2>
-              <p className="text-xl">$2.00</p>
-            </div>
-            <div className="flex justify-between items-center w-full">
-              <h2 className="text-2xl font-bold text-gray-700">الاجمالي</h2>
-              <p className="text-xl">
-                ${productQuantity.reduce((a, b) => a + b.price * b.quantity, 0)}
-              </p>
-            </div>
-          </div>
-          <div className="p-10">
-            <button className="w-full bg-lime-500 text-white p-2">الدفع</button>
-          </div>
-        </div>
-        <div className="md:w-2/3 lg:w-[70vw]">
-          <div className="flex justify-between p-5 items-center">
-            <h1 className="text-4xl font-bold mt-20 text-right">السلة</h1>
-            <p className="items-center text-gray-500 mt-20 text-right">
-              {productQuantity.length} عناصر
-            </p>
-          </div>
-          <hr className="mt-1" />
-          <div>
-            {productQuantity.map((product) => (
-              <div key={product?.id}>
-                <div className="flex justify-between p-5 items-center flex-col md:flex-row">
-                  <div className="flex items-center gap-5 mb-4 md:mb-0">
-                    <img
-                      src={product?.image}
-                      alt={product?.name}
-                      className="w-[100px] h-[100px] bg-gray-100"
-                    />
-                    <div>
-                      <h1 className="lg:text-2xl text-xl font-bold text-right">
-                        {product?.name}
-                      </h1>
-                      <p className="text-gray-500 text-right max-w-[300px] text-sm">
-                        {product?.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-5 mb-4 md:mb-0">
-                    <button
-                      onClick={() => incrementQuantity(product?.id)}
-                      className="bg-gray-200 w-8 h-8 rounded-full flex justify-center items-center text-center"
-                    >
-                      +
-                    </button>
-                    <p>{product?.quantity}</p>
-                    <button
-                      onClick={() => decrementQuantity(product?.id)}
-                      className="bg-gray-200 w-8 h-8 rounded-full flex justify-center items-center text-center"
-                    >
-                      -
-                    </button>
-                  </div>
-                  <div>
-                    <h1 className="lg:text-2xl text-xl font-bold">
-                      $
-                      {product.quantity > 1
-                        ? product?.price * product.quantity
-                        : product?.price}
-                    </h1>
-                  </div>
-                  <button className="bg-red-500 text-white w-8 h-8 rounded-full flex justify-center items-center text-center">
-                    <FaTrash />
-                  </button>
+
+    // shipping details
+    const [name, setName] = React.useState('')
+    const [phone_number, setPhoneNumber] = React.useState('')
+    const [state, setState] = React.useState('')
+    const [address, setAddress] = React.useState('')
+    const [email, setEmail] = React.useState('')
+
+
+
+    // shipping fees
+    const [shippingFees, setShippingFees] = React.useState(0)
+
+    const calculateShippingFees = () => {
+        setShippingFees(states?.find(s => s?.id == state)?.shipping_price)
+    }
+
+    useEffect(() => {
+        calculateShippingFees()
+    }, [state])
+
+
+    const [total, setTotal] = React.useState(0)
+
+    const calculateTotal = () => {
+        let total = 0
+        cart?.forEach(item => {
+            total += item?.offer_price ? item?.offer_price * item?.quantity : item?.price * item?.quantity
+        })
+        if (shippingFees) {
+            setTotal(total + shippingFees)
+        } else {
+            setTotal(total)
+        }
+    }
+
+    useEffect(() => {
+        calculateTotal()
+    }, [cart, shippingFees])
+
+
+
+    // modal
+    const { isOpen, onOpen, onClose } = useDisclosure()
+
+
+    return (
+        <div className='font p-5'>
+            <Navbar />
+
+            <div className='flex flex-col gap-10 p-5 mt-10'>
+                <div className='w-[100%] h-fit'>
+                    <table className="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th className="py-2 text-start min-w-[40%]">المنتج</th>
+                                <th className="py-2 text-start w-[20%]">السعر</th>
+                                <th className="py-2 text-start w-[20%]">الكمية</th>
+                                <th className="py-2 text-start w-[20%]">المجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {cart?.map((item, index) => (
+                                <CartItem key={item?.id} item={item} index={index} />
+                            ))}
+                            <button className='mt-3 p-1 hover:bg-black/10 hover:border-black/10 px-4 transition-all duration-500 border-black border w-fit'>اكمل التسوق</button>
+                        </tbody>
+                    </table>
                 </div>
-                <hr />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-export default Cart;
+
+                <div className='flex gap-5 w-full'>
+                    <div className='min-w-[400px] p-5 border border-black flex flex-col h-fit'>
+                        <strong className='text-2xl text-gray-500'>ملخص الطلب</strong>
+                        <ul className='flex flex-col mt-3'>
+                            {cart?.map((item, index) => (
+                                <li key={item?.id} className='flex gap-2 justify-between my-2'>
+                                    <strong>{item?.name}:</strong>
+                                    <p>{item?.offer_price ? item?.offer_price * item?.quantity : item?.price * item?.quantity} EGP</p>
+                                </li>
+                            ))}
+                            <li className='flex gap-2 justify-between my-2'>
+                                <strong>الشحن:</strong>
+                                <p>{shippingFees || 0} EGP</p>
+                            </li>
+                            <li className='flex gap-2 justify-between my-2'>
+                                <strong>المجموع:</strong>
+                                <p>{total} EGP</p>
+                            </li>
+                            <li className='flex gap-2 justify-between my-2'>
+                                <button onClick={onOpen} className='p-1 py-2 px-4 transition-all duration-500 hover:bg-gray-800 bg-black text-white w-full'>اضف تفاصيل الشحن لطلب المنتج</button>
+                            </li>
+                        </ul>
+                    </div>
+
+
+                    <div className='flex flex-col w-full'>
+                        <strong className='text-2xl text-gray-500'>ملخص الشحن</strong>
+                        {!name ? (
+                            <div className='p-3 bg-yellow-100 mt-3 border border-yellow-700 text-yellow-700 flex flex-col justify-center items-center'>
+                                <p>يجب ان تضف تفاصيل الشحن</p>
+                            </div>
+                        ) : (
+                            <ul className='flex flex-col mt-3'>
+                                <li className='flex gap-2 my-2'>
+                                    <strong>الاسم:</strong>
+                                    <p>{name}</p>
+                                </li>
+                                <li className='flex gap-2 my-2'>
+                                    <strong>رقم الجوال:</strong>
+                                    <p>{phone_number}</p>
+                                </li>
+                                <li className='flex gap-2 my-2'>
+                                    <strong>المحافظة:</strong>
+                                    <p>{states?.find(s => s?.id == state)?.name}</p>
+                                </li>
+                                <li className='flex gap-2 my-2'>
+                                    <strong>العنوان:</strong>
+                                    <p>{address}</p>
+                                </li>
+                                <li className='flex gap-2 my-2'>
+                                    <strong>البريد الالكتروني:</strong>
+                                    <p>{email}</p>
+                                </li>
+                                <button className='p-1 mt-3 py-2 px-4 transition-all duration-500 hover:bg-green-800 bg-green-500 text-white w-fit'>تاكيد الطلب</button>
+                            </ul>
+                        )}
+                    </div>
+                </div>
+
+
+                <Modal size='xl' isCentered isOpen={isOpen} onClose={() => {
+                    if (!name || !phone_number || !state || !address) {
+                        alert('يجب اضافة جميع الخانات (ماعدا البريد الالكتروني هو اختياري)')
+                    } else {
+                        onClose()
+                    }
+                }}>
+                    <ModalOverlay />
+                    <ModalContent>
+                        <ModalHeader className='font'>اضف تفاصيل الشحن</ModalHeader>
+                        <div className='flex flex-col p-3 font'>
+                            <div className='flex flex-col'>
+                                <label htmlFor="name">الاسم</label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="border border-gray-400 outline-none rounded-md p-2"
+                                    placeholder='مثال: يوسف شريف'
+                                />
+                            </div>
+                            <div className='flex flex-col mt-3'>
+                                <label htmlFor="phone_number">رقم الجوال</label>
+                                <input
+                                    type="text"
+                                    id="phone_number"
+                                    value={phone_number}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    className="border border-gray-400 outline-none rounded-md p-2"
+                                    placeholder='مثال: 01234567890'
+                                />
+                            </div>
+                            <div className='flex flex-col mt-3'>
+                                <label htmlFor="state">المحافظة</label>
+                                <select
+                                    id="state"
+                                    value={state}
+                                    onChange={(e) => setState(e.target.value)}
+                                    className="border border-gray-400 outline-none rounded-md p-2"
+                                >
+                                    <option value="">اختر المحافظة</option>
+                                    {states?.map(state => (
+                                        <option key={state?.id} value={state?.id}>{state?.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className='flex flex-col mt-3'>
+                                <label htmlFor="address">العنوان</label>
+                                <textarea
+                                    id="address"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    className="border border-gray-400 outline-none rounded-md p-2"
+                                    placeholder='مثال: مدينة الشروق, اسكان مبارك الشباب 100 متر, عمارة 123'
+                                />
+                            </div>
+                            <div className='flex flex-col mt-3'>
+                                <label htmlFor="email">البريد الالكترونى <span className='text-gray-500 text-sm'>(في حالة لو تريد تتبع شحنتك مباشرة)</span></label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="border border-gray-400 outline-none rounded-md p-2"
+                                    placeholder='مثال: example@example.com'
+                                />
+                            </div>
+                            <button onClick={() => {
+                                if (!name || !phone_number || !state || !address) {
+                                    alert('يجب اضافة جميع الخانات (ماعدا البريد الالكتروني هو اختياري)')
+                                } else {
+                                    onClose()
+                                }
+                            }} className='p-1 py-2 px-4 transition-all duration-500 hover:bg-gray-800 bg-black text-white w-fit mt-3'>تم</button>
+                        </div>
+                    </ModalContent>
+                </Modal>
+
+            </div>
+
+        </div>
+    )
+}
+
+export default Cart
