@@ -1,50 +1,52 @@
-import React, { useState } from "react";
-import { BsChevronCompactLeft, BsChevronCompactRight } from "react-icons/bs";
+import React from "react";
+import { FaCircleArrowRight } from "react-icons/fa6";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 const Slider = () => {
   const slides = [
-    {
-      url: "https://flowbite.com/docs/images/carousel/carousel-1.svg",
-    },
-    {
-      url: "https://flowbite.com/docs/images/carousel/carousel-2.svg",
-    },
-    {
-      url: "https://flowbite.com/docs/images/carousel/carousel-3.svg",
-    },
-    {
-      url: "https://flowbite.com/docs/images/carousel/carousel-4.svg",
-    },
-    {
-      url: "https://flowbite.com/docs/images/carousel/carousel-5.svg",
-    },
+    "https://i.pinimg.com/control/564x/cb/3d/39/cb3d3999aa56d7a2ed371c85574f3f98.jpg",
+    "https://i.pinimg.com/control/564x/db/bf/dd/dbbfdd567877c9605419f321997e59f9.jpg",
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeSlide, setActiveSlide] = React.useState(0);
 
-  const prevSlide = () => {
-    const isFirstSlide = currentIndex === 0;
-    const newIndex = isFirstSlide ? slides.length - 1 : currentIndex - 1;
-    setCurrentIndex(newIndex);
+  const nextSlide = () => {
+    if (activeSlide === slides.length - 1) {
+      setActiveSlide(0);
+    } else {
+      setActiveSlide(activeSlide + 1);
+    }
   };
 
-  const nextSlider = () => {
-    const isLastSlide = currentIndex === slides.length - 1;
-    const newIndex = isLastSlide ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
+  const prevSlide = () => {
+    if (activeSlide === 0) {
+      setActiveSlide(slides.length - 1);
+    } else {
+      setActiveSlide(activeSlide - 1);
+    }
   };
 
   return (
-    <div className="w-[100vw] lg:h-[53vw] md:h-[60vw] h-[100vw] m-auto py-16 px-4 relative group">
+    <div className="md:h-[40vw] h-[60vw] relative">
       <div
-        style={{ backgroundImage: `url(${slides[currentIndex].url})` }}
-        className="h-full rounded-2xl bg-center bg-cover duration-500"
-      ></div>
-      <div className="hidden group-hover:block absolute top-[50%] left-5 -translate-y-1/2 text-2xl rounded-full p-2 bg-black/20 text-white cursor-pointer">
-        <BsChevronCompactLeft size={30} onClick={prevSlide} />
-      </div>
-      <div className="hidden group-hover:block absolute top-[50%] right-5 -translate-y-1/2 text-2xl rounded-full p-2 bg-black/20 text-white cursor-pointer">
-        <BsChevronCompactRight size={30} onClick={nextSlider} />
+        style={{
+          backgroundImage: `url(${slides[activeSlide]})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        className="w-full h-full flex justify-center items-center overflow-hidden" />
+
+      <button onClick={prevSlide} className="absolute transition-all duration-300 hover:bg-black/75 text-white top-1/2 -translate-y-1/2 flex flex-col justify-center items-center right-1 md:w-[45px] w-[25px] md:h-[45px] h-[25px] rounded-full bg-black">
+        <IoIosArrowForward size={25} />
+      </button>
+      <button onClick={nextSlide} className="absolute transition-all duration-300 hover:bg-black/75 text-white top-1/2 -translate-y-1/2 flex flex-col justify-center items-center left-1 md:w-[45px] w-[25px] md:h-[45px] h-[25px] rounded-full bg-black">
+        <IoIosArrowBack size={25} />
+      </button>
+
+      <div className="w-full absolute bottom-0 md:p-2 p-1 bg-black/10 flex justify-center items-center gap-5">
+        {slides?.map((slide, index) => (
+          <span key={index} className={`p-1 rounded-full flex flex-col w-fit h-fit ${index === activeSlide ? "bg-lime-500" : "bg-white"}`} />
+        ))}
       </div>
     </div>
   );

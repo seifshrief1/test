@@ -4,7 +4,7 @@ import Slider from "../Slider/Slider";
 
 const Header = () => {
   return (
-    <header className="flex-col flex items-center justify-center">
+    <header className="md:p-5 p-3">
       <Navbar />
       <div>
         <Slider />
