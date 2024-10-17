@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "../../Components/Navbar/Navbar";
-import products from "../../Components/ProductsArray";
 import { CiShoppingCart } from "react-icons/ci";
 import { ProductsContextProvider } from "../../Contexts/ProductsContext";
 import ProductCard from "../../Components/Products/ProductCard";
