@@ -1,13 +1,38 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "../../Components/Navbar/Navbar";
-import products from "../../Components/ProductsArray";
 import { CiShoppingCart } from "react-icons/ci";
+import { ProductsContextProvider } from "../../Contexts/ProductsContext";
+import ProductCard from "../../Components/Products/ProductCard";
+import { CartContextProvider } from "../../Contexts/CartContext";
 
 const ProductDetails = () => {
+
+  const productsContext = useContext(ProductsContextProvider);
+
+  const productDetails = productsContext?.product;
+
   const { id } = useParams();
 
-  const productDetails = products.find((product) => product.id == id);
+  const handleFetchProduct = async (id) => {
+    await productsContext?.fetchProduct(id);
+  };
+
+  useEffect(() => {
+    handleFetchProduct(id);
+  }, [id]);
+
+
+  const products = productsContext?.products;
+
+  const handleGetProducts = async () => {
+    await productsContext?.fetchProducts();
+  };
+
+  useEffect(() => {
+    handleGetProducts();
+  }, []);
+
 
   useEffect(() => {
     window.scrollTo({
@@ -16,98 +41,63 @@ const ProductDetails = () => {
     });
   }, [id]);
 
+
+
+  const cartsContext = useContext(CartContextProvider);
+
+  const handleAddToCart = (product) => {
+    cartsContext?.addToCart(product);
+  };
+
   return (
-    <div className="flex flex-col justify-center items-center h-auto">
+    <div className="flex flex-col h-auto p-5 mb-5">
       <Navbar />
-      <div className="w-full flex justify-center mt-10">
+      <div className="w-full flex mt-10">
         {productDetails && (
           <div className="lg:flex-row flex flex-col-reverse justify-around items-center w-[100%]">
-            <div>
+            <div className="md:w-1/2 w-full">
               <div>
                 <h1
                   className="lg:text-5xl text-2xl font-bold text-right"
                   style={{ lineHeight: 1.2 }}
                 >
-                  {productDetails.name}
+                  {productDetails?.name}
                 </h1>
-                <p className="text-lg font-semibold mt-5 text-right">
-                  ${productDetails.price}
-                </p>
-              </div>
-              <hr />
-              <div className="flex gap-2 mt-5">
-                <div className="w-5 h-5 bg-black/80 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-black/70 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-black/60 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-black/50 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-black/40 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-black/30 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-gray-500 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-gray-300 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded-full border border-gray-500"></div>
-                <div className="w-5 h-5 bg-gray-100 rounded-full border border-gray-500"></div>
-              </div>
-              <div className="flex gap-2 mt-5">
-                <div className="bg-transparent text-black border border-black w-8 h-8 text-center cursor-pointer flex items-center justify-center">
-                  SM
-                </div>
-                <div className="bg-black text-white w-8 h-8 text-center cursor-pointer flex items-center justify-center">
-                  MD
-                </div>
-                <div className="bg-black text-white w-8 h-8 text-center cursor-pointer flex items-center justify-center">
-                  LG
+                <div className="flex items-center gap-2 mt-4">
+                  <p className="text-xl font-bold">{productDetails?.offer_price ? productDetails?.offer_price : productDetails?.price} EGP</p>
+                  {
+                    productDetails?.price && (
+                      <small className="text-gray-500 line-through">بدلا من {productDetails?.price} EGP</small>
+                    )
+                  }
                 </div>
               </div>
               <div className="flex items-center gap-5">
-                <button className="bg-lime-500 text-white px-3 py-2 flex items-center gap-2 mt-5 w-full text-center justify-center">
+                <button onClick={() => handleAddToCart(productDetails)} className="bg-lime-500 transition-all duration-300 hover:bg-lime-600 active:bg-lime-700 text-white px-3 py-2 flex items-center gap-2 mt-5 w-full text-center justify-center">
+                  <CiShoppingCart size={25} />
                   اضف الى السلة
-                  <CiShoppingCart />
                 </button>
-                <button className="bg-transparent border border-lime-500 text-lime-500 w-[100px] px-3 py-2 flex items-center gap-2 mt-5 text-center justify-center">
+                <button className="bg-transparent transition-all duration-300 hover:bg-lime-100 hover:border-lime-100 hover:text-lime-700 active:bg-lime-200 border border-lime-500 text-lime-500 w-[100px] px-3 py-2 flex items-center gap-2 mt-5 text-center justify-center">
                   شراء
                 </button>
               </div>
-              <p className="mt-5 max-w-[400px] text-right">
-                {productDetails.description}
+              <p className="mt-5 text-right text-gray-500">
+                {productDetails?.description}
               </p>
             </div>
-            <img
-              src={productDetails.image}
-              alt={productDetails.name}
-              className="lg:w-[500px] md:w-[400px] bg-gray-100/30 p-5"
-            />
+            <div className="md:w-1/2 w-full">
+              <img
+                src={productDetails?.images ? productDetails?.images[0]?.image : ""}
+                alt={productDetails?.name}
+                className="w-full max-w-[400px] mx-auto bg-gray-100/30 p-5"
+              /></div>
           </div>
         )}
       </div>
-      <h1 className="text-2xl font-bold mt-10">منتجات مشابهة</h1>
+      <h1 className="md:text-5xl text-3xl text-lime-700 font-bold mt-20 text-center">منتجات مشابهة</h1>
       <div className="grid lg:grid-cols-4 grid-cols-1 md:grid-cols-2 gap-10 mt-10">
-        {products.map((product) => (
-          <div className="flex flex-col items-center gap-5 p-2 bg-white">
-            <Link to={`/ProductDetails/${product.id}`} key={product.id}>
-              <img
-                src={product.image}
-                alt={product.name}
-                className="max-w-[250px]"
-              />
-            </Link>
-            <div>
-              <p className="font-bold text-right mb-3 text-2xl">
-                {product.name}
-              </p>
-              <p className="max-w-[350px] text-right text-sm">
-                {product.description}
-              </p>
-              <div className="flex items-center gap-5 justify-between mt-2">
-                <button className="bg-lime-500 text-white px-3 py-2 text-sm flex items-center gap-2">
-                  اضف الي السلة <CiShoppingCart />
-                </button>
-
-                <p className="flex items-center flex-col">
-                  <p className="text-xl font-bold">${product.price}</p>
-                </p>
-              </div>
-            </div>
-          </div>
+        {products?.map((product) => (
+          <ProductCard key={product?.id} product={product} />
         ))}
       </div>
     </div>
